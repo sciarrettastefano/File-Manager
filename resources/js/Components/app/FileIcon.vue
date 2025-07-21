@@ -9,15 +9,15 @@
                     0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
         </svg>
         <template v-else>
-            <img class="max-w-full" v-if="isImage(file)" :src="'/build/images/icons/image.png'">
-            <img class="max-w-full" v-else-if="isPDF(file)" :src="'/build/images/icons/pdf.png'">
-            <img class="max-w-full" v-else-if="isAudio(file)" :src="'/build/images/icons/audio.png'">
-            <img class="max-w-full" v-else-if="isVideo(file)" :src="'/build/images/icons/video.png'">
-            <img class="max-w-full" v-else-if="isWord(file)" :src="'/build/images/icons/word.png'">
-            <img class="max-w-full" v-else-if="isExcel(file)" :src="'/build/images/icons/excel.png'">
-            <img class="max-w-full" v-else-if="isZip(file)" :src="'/build/images/icons/zip.png'">
-            <img class="max-w-full" v-else-if="isText(file)" :src="'/build/images/icons/txt-file.png'">
-            <img class="max-w-full" v-else :src="'/build/images/icons/attach-file.png'">
+            <img class="max-w-full" v-if="isImage(file)" :src="'/images/icons/image.png'">
+            <img class="max-w-full" v-else-if="isPDF(file)" :src="'/images/icons/pdf.png'">
+            <img class="max-w-full" v-else-if="isAudio(file)" :src="'/images/icons/audio.png'">
+            <img class="max-w-full" v-else-if="isVideo(file)" :src="'/images/icons/video.png'">
+            <img class="max-w-full" v-else-if="isWord(file)" :src="'/images/icons/word.png'">
+            <img class="max-w-full" v-else-if="isExcel(file)" :src="'/images/icons/excel.png'">
+            <img class="max-w-full" v-else-if="isZip(file)" :src="'/images/icons/zip.png'">
+            <img class="max-w-full" v-else-if="isText(file)" :src="'/images/icons/txt-file.png'">
+            <img class="max-w-full" v-else :src="'/images/icons/attach-file.png'">
         </template>
     </span>
 

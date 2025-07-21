@@ -6,5 +6,5 @@
     <p>{{$file->is_folder ? 'Folder' : 'File'}} - {{$file->name}}</p>
 @endforeach
 <hr>
-<p>To visualize the files, visit the link: <a href='http://localhost'>Shared With Me</a></p>
+<p>To visualize the files, visit the link: <a href='http://localhost/login'>Shared With Me</a></p>
 

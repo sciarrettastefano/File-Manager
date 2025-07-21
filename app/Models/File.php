@@ -30,7 +30,7 @@ class File extends Model
     }
 
     public function starred()
-    {   // vid returna se il file sia contenuto nella tabella starred_files o meno verificando tramite id
+    {   // ci returna se il file sia contenuto nella tabella starred_files o meno verificando tramite id
         // bisogna aggiungere una condizione affinchè filtrimo solo i file che sono dell'user corrente
         // sennò potrei avere un risultato falsato poichè in starred_files lo stesso file può essere in più record
         // come preferito da parte di più users
@@ -147,6 +147,16 @@ class File extends Model
             ->where('files.created_by', Auth::id())
             ->orderBy('file_shares.created_at', 'desc')
             ->orderBy('files.id', 'desc');
+    }
+
+    public function versions()
+    {
+        return $this->hasMany(FileVersion::class);
+    }
+
+    public function latestVersion()
+    {
+        return $this->hasOne(FileVersion::class)->latestOfMany();
     }
 
 }

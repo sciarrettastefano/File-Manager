@@ -96,7 +96,6 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center">
                             <FileIcon :file="file" />
-                            {{ file.id }}
                             {{ file.name }}
                         </td>
                         <td v-if="search" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 ">
@@ -108,8 +107,11 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {{ file.updated_at }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td v-if="!file.is_folder" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {{ file.size }}
+                        </td>
+                        <td v-else class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            -
                         </td>
                     </tr>
                     </tbody>
@@ -301,11 +303,15 @@ function onDelete() {
 }
 
 function addRemoveFavourite(file) {
-
+    
     httpPost(route("file.addToFavourites"), {id: file.id})
         .then(() => {
             file.is_favourite = !file.is_favourite
-            showSuccessNotification('Selected files have been added to favourites')
+            if (file.is_favourite) {
+                showSuccessNotification('Selected files have been added to favourites')
+            } else {
+                showSuccessNotification('Selected files have been removed from favourites')
+            }
         })
         .catch(async (er) => {
             console.log(er.error.message)

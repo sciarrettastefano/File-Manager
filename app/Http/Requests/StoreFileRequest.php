@@ -51,9 +51,9 @@ class StoreFileRequest extends ParentIdBaseRequest
                             ->whereNull('deleted_at')
                             ->first();
 
-                        if (!blank($file)) {
-                            $fail('File "' . $value->getClientOriginalName() . '" already exists.');
-                        }
+                        //if (!blank($file)) {
+                        //    $fail('File "' . $value->getClientOriginalName() . '" already exists.');
+                        //}
                     }
                 }
             ],

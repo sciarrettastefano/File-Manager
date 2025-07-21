@@ -12,9 +12,11 @@ use App\Http\Resources\FileResource;
 use App\Mail\ShareFilesMail;
 use App\Models\File;
 use App\Models\FileShare;
+use App\Models\FileVersion;
 use App\Models\StarredFile;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\File as HttpFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -23,6 +25,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class FileController extends Controller
 {
@@ -172,6 +175,65 @@ class FileController extends Controller
         }
     }
 
+    public function storeHandlingVersions(StoreFileRequest $request)
+    {
+        $data = $request->validated();
+        $parent = $request->parent;
+        $user = $request->user();
+        $fileTree = $request->file_tree;
+
+        if (!$parent) { // se non c'è il parent allora siamo nella root
+            $parent = $this->getRoot();
+        }
+
+        if (!empty($fileTree)) { // se l'albero non è vuoto me lo salvo
+            $this->saveFileTree($fileTree, $parent, $user);
+        } else {
+            foreach ($data['files'] as $file) {
+                /** @var \Illuminate\Http\UploadedFile $file */
+
+                // prendo dal db il record con i dati della richiesta
+                $existingFile = File::query()->where('name', $file->getClientOriginalName())
+                    ->where('created_by', Auth::id())
+                    ->where('parent_id', $parent->id)
+                    ->whereNull('deleted_at')
+                    ->first();
+
+                if ($existingFile) {
+                    $id = $existingFile->id;
+                } else {
+                    $id = null;
+                }
+
+                $existingVersion = FileVersion::query()->where('file_id', $id)
+                    ->orderBy('version_number', 'desc')
+                    ->first();
+
+                if ($existingVersion) { // se il record esiste
+                    // calcolo gli hash del record trovato e del file della richiesta
+                    $fileHash = hash_file('sha256', $file->getRealPath());
+                    $existingHash = $existingVersion->hash;
+
+                    // confronto gli hash
+                    if ($fileHash === $existingHash) { // se sono uguali skippo il ciclo all'else
+                        throw ValidationException::withMessages([
+                            'files' => 'File "' . $file->getClientOriginalName() . '" already exists.'
+                        ]);
+                    } else { // se sono diversi allora devo creare una nuova versione del file
+                        $version_number = FileVersion::query()->where('file_id', $id)->max('version_number') + 1;
+                        $this->saveVersion($file, $id, $user, $version_number, $fileHash);
+                    }
+
+                } else { // altrimenti salvo il file e la sua prima versione
+                    $hash = hash_file('sha256', $file->getRealPath());
+                    $this->saveFile($file, $user, $parent);
+                    $file_id = File::query()->where('name', $file->getClientOriginalName())->first()->id;
+                    $this->saveVersion($file, $file_id, $user, 1, $hash);
+                }
+            }
+        }
+    }
+
     public function createFolder(StoreFolderRequest $request)
     {
         $data = $request->validated();
@@ -277,6 +339,18 @@ class FileController extends Controller
         $model->size = $file->getSize();
 
         $parent->appendNode($model);
+    }
+
+    private function saveVersion($file, $file_id, $user, $version_number, $hash)
+    {
+        $path = $file->store('/files' . $user->id);
+
+        $model = new FileVersion();
+        $model->file_id = $file_id;
+        $model->version_number = $version_number;
+        $model->hash = $hash;
+        $model->storage_path = $path;
+        $model->save();
     }
 
     public function createZip($files): string
